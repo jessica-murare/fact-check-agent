@@ -38,12 +38,18 @@ async def analyze_pdf(file: UploadFile = File(...)):
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 
-    claims = identify_claims(pdf_text)
+    try:
+        claims = identify_claims(pdf_text)
+    except ValueError as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
     if not claims:
         raise HTTPException(status_code=422, detail="No verifiable claims found in this PDF.")
 
-    verified = verify_all_claims(claims)
+    try:
+        verified = verify_all_claims(claims)
+    except ValueError as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
     return AnalysisReport(
         filename=file.filename,

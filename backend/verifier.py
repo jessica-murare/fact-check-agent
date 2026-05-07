@@ -96,7 +96,8 @@ def verify_claim(claim: Claim) -> VerifiedClaim:
         max_tokens=500,
     )
 
-    raw = response.choices[0].message.content.strip()
+    raw = response.choices[0].message.content or ""
+    raw = raw.strip()
 
     if raw.startswith("```"):
         raw = raw.split("```")[1]
@@ -104,7 +105,15 @@ def verify_claim(claim: Claim) -> VerifiedClaim:
             raw = raw[4:]
     raw = raw.strip()
 
-    result = json.loads(raw)
+    if not raw:
+        raise ValueError(f"Groq returned an empty verification response for claim #{claim.id}.")
+
+    try:
+        result = json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise ValueError(
+            f"Groq returned invalid verification JSON for claim #{claim.id}: {raw[:500]}"
+        ) from e
 
     return VerifiedClaim(
         id=claim.id,

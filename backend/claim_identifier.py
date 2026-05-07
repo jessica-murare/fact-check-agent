@@ -41,7 +41,8 @@ def identify_claims(pdf_text: str) -> list[Claim]:
         max_tokens=2000,
     )
 
-    raw = response.choices[0].message.content.strip()
+    raw = response.choices[0].message.content or ""
+    raw = raw.strip()
 
     # Strip markdown fences if model adds them
     if raw.startswith("```"):
@@ -50,5 +51,12 @@ def identify_claims(pdf_text: str) -> list[Claim]:
             raw = raw[4:]
     raw = raw.strip()
 
-    data = json.loads(raw)
+    if not raw:
+        raise ValueError("Groq returned an empty claim extraction response.")
+
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Groq returned invalid claim extraction JSON: {raw[:500]}") from e
+
     return [Claim(**item) for item in data]

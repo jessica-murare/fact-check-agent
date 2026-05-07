@@ -6,7 +6,23 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000") # replace after deploy
+
+def get_backend_url() -> str:
+    try:
+        return st.secrets.get("BACKEND_URL", os.getenv("BACKEND_URL", "http://localhost:8000"))
+    except Exception:
+        return os.getenv("BACKEND_URL", "http://localhost:8000")
+
+
+BACKEND_URL = get_backend_url() # replace after deploy
+
+
+def get_error_detail(response: requests.Response) -> str:
+    try:
+        data = response.json()
+        return data.get("detail", data)
+    except ValueError:
+        return response.text or f"HTTP {response.status_code}"
 
 st.set_page_config(
     page_title="Fact-Check Agent",
@@ -114,7 +130,7 @@ if uploaded_file:
                     )
 
                 else:
-                    detail = response.json().get("detail", "Unknown error")
+                    detail = get_error_detail(response)
                     st.error(f"Backend error: {detail}")
 
             except requests.exceptions.ConnectionError:
