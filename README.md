@@ -4,6 +4,12 @@ A PDF fact-checking assistant that extracts verifiable claims from uploaded docu
 
 The project uses a FastAPI backend for PDF processing, claim extraction, and verification, plus a Streamlit frontend for uploading PDFs and reviewing results.
 
+## Live Demo
+
+- Frontend: https://fact-check-agent-cwbd95mgskr3xdioavazbg.streamlit.app/
+- Backend API: https://fact-check-agent.onrender.com/
+- Backend docs: https://fact-check-agent.onrender.com/docs
+
 ## Features
 
 - Upload a PDF document through a Streamlit interface.
@@ -221,6 +227,12 @@ TAVILY_API_KEY
 
 If the frontend is deployed separately, set its `BACKEND_URL` environment variable to the deployed backend URL.
 
+For the live Streamlit deployment, use:
+
+```text
+BACKEND_URL=https://fact-check-agent.onrender.com
+```
+
 ## Limitations
 
 - Scanned image-only PDFs are not supported unless OCR is added.
@@ -253,4 +265,3 @@ Check that `GROQ_API_KEY` is configured and valid.
 ## Author
 
 Built by [Jessica Murare](https://github.com/jessica-murare).
-
