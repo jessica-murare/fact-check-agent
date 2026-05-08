@@ -77,6 +77,30 @@ if uploaded_file:
 
                     st.divider()
 
+                    # ── Overall confidence ───────────────────────────────
+                    avg_confidence = round(
+                        sum(c.get("confidence", 50) for c in report["claims"]) / len(report["claims"])
+                    )
+
+                    if avg_confidence >= 70:
+                        conf_color = "#10b981"
+                    elif avg_confidence >= 40:
+                        conf_color = "#f59e0b"
+                    else:
+                        conf_color = "#ef4444"
+
+                    st.markdown(f"""
+                    <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:16px; text-align:center">
+                        <div style="font-size:14px; color:#6b7280">Overall Report Confidence</div>
+                        <div style="font-size:36px; font-weight:700; color:{conf_color}">{avg_confidence}%</div>
+                        <div style="background:#e5e7eb; border-radius:6px; height:10px; margin-top:8px">
+                            <div style="background:{conf_color}; width:{avg_confidence}%; height:10px; border-radius:6px"></div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    st.divider()
+
                     # ── Filters ───────────────────────────────────────────
                     st.subheader("Claims")
                     verdict_filter = st.multiselect(
@@ -99,6 +123,29 @@ if uploaded_file:
                                 st.markdown(f'<span class="{badge_class}">{verdict}</span>', unsafe_allow_html=True)
                                 st.caption(f"Category: {claim['category']}")
 
+                                # ── Confidence bar ────────────────────────
+                                confidence = claim.get("confidence", 50)
+
+                                if confidence >= 70:
+                                    bar_color = "#10b981"
+                                elif confidence >= 40:
+                                    bar_color = "#f59e0b"
+                                else:
+                                    bar_color = "#ef4444"
+
+                                st.markdown(f"""
+                                <div style="margin-top:10px">
+                                    <div style="font-size:12px; color:#6b7280; margin-bottom:4px">
+                                        Confidence: <b>{confidence}%</b>
+                                    </div>
+                                    <div style="background:#e5e7eb; border-radius:6px; height:8px; width:100%">
+                                        <div style="background:{bar_color}; width:{confidence}%;
+                                                    height:8px; border-radius:6px; transition:width 0.3s">
+                                        </div>
+                                    </div>
+                                </div>
+                                """, unsafe_allow_html=True)
+
                             with col2:
                                 st.markdown(f"**Claim:** {claim['text']}")
                                 st.markdown(f"**Reason:** {claim['reason']}")
@@ -118,6 +165,7 @@ if uploaded_file:
                         "Claim": c["text"],
                         "Category": c["category"],
                         "Verdict": c["verdict"],
+                        "Confidence": f"{c.get('confidence', 50)}%",
                         "Reason": c["reason"],
                         "Correct Value": c.get("correct_value", ""),
                     } for c in report["claims"]])

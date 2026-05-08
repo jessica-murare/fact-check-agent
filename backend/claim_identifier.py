@@ -1,11 +1,13 @@
 import os
 import json
+from datetime import datetime
 from groq import Groq
 from models import Claim
 from dotenv import load_dotenv
 load_dotenv()
 
 client = Groq(api_key=os.environ["GROQ_API_KEY"])
+CURRENT_YEAR = datetime.now().year
 
 SYSTEM_PROMPT = """You are a precise fact-extraction assistant.
 Your job is to identify specific, verifiable claims from text.
@@ -60,3 +62,14 @@ def identify_claims(pdf_text: str) -> list[Claim]:
         raise ValueError(f"Groq returned invalid claim extraction JSON: {raw[:500]}") from e
 
     return [Claim(**item) for item in data]
+
+
+def tag_future_claims(claims: list[Claim]) -> list[Claim]:
+    """Mark claims about future years so verifier treats them as projections."""
+    future_years = [str(year) for year in range(CURRENT_YEAR + 1, CURRENT_YEAR + 6)]
+
+    for claim in claims:
+        if any(year in claim.text for year in future_years):
+            claim.category = "future_projection"
+
+    return claims

@@ -16,10 +16,14 @@ The project uses a FastAPI backend for PDF processing, claim extraction, and ver
 - Extract text from machine-readable PDFs using PyMuPDF.
 - Identify concrete, checkable claims such as statistics, dates, financial figures, rankings, and technical specifications.
 - Search live web evidence with the Tavily API.
+- Use targeted search strategies for government, policy, and pricing claims.
+- Fetch direct pricing-page content for SaaS pricing claims when available.
 - Verify claims with Groq-hosted Llama 3.3 70B.
 - Classify each claim as `VERIFIED`, `INACCURATE`, `FALSE`, or `UNVERIFIABLE`.
-- Show source URLs used during verification.
-- Download the final fact-check report as a CSV file.
+- Mark future-year claims as `future_projection` and return them as unverifiable projections.
+- Show confidence scores for the full report and for each individual claim.
+- Attach source links to claim explanations and list URLs used during verification.
+- Download the final fact-check report, including confidence scores, as a CSV file.
 
 ## Tech Stack
 
@@ -30,6 +34,8 @@ The project uses a FastAPI backend for PDF processing, claim extraction, and ver
 - PyMuPDF
 - Groq Python SDK
 - Tavily Search API
+- HTTPX
+- Beautiful Soup
 - Pydantic
 - python-dotenv
 
@@ -64,9 +70,11 @@ fact-check-agent/
 2. The frontend sends the PDF to the backend `/analyze` endpoint.
 3. The backend extracts text from the PDF using PyMuPDF.
 4. Groq identifies verifiable claims from the extracted text.
-5. For each claim, Tavily searches the web for relevant evidence.
-6. Groq evaluates the claim against the search results and returns a verdict.
-7. The frontend displays a summary, claim-level explanations, sources, and a CSV export option.
+5. Claims that reference future years are tagged as `future_projection`.
+6. For each claim, Tavily searches the web for relevant evidence.
+7. Pricing claims get an additional targeted pricing-page lookup and page-text extraction when available.
+8. Groq evaluates the claim against the evidence and returns a verdict, explanation, primary source index, and confidence score.
+9. The frontend displays summary metrics, overall confidence, claim-level confidence bars, source-linked explanations, sources, and a CSV export option.
 
 ## Requirements
 
@@ -206,9 +214,10 @@ Returns an analysis report:
       "text": "Example claim from the PDF",
       "category": "statistic",
       "verdict": "VERIFIED",
-      "reason": "Brief explanation of the verdict",
+      "reason": "Brief explanation of the verdict — [source](https://example.com/source)",
       "correct_value": null,
-      "sources": ["https://example.com/source"]
+      "sources": ["https://example.com/source"],
+      "confidence": 85
     }
   ]
 }
@@ -238,6 +247,8 @@ BACKEND_URL=https://fact-check-agent.onrender.com
 - Scanned image-only PDFs are not supported unless OCR is added.
 - Long PDFs are truncated during claim extraction to control token usage.
 - Verification quality depends on search result relevance and model reasoning.
+- Confidence scores are model-estimated and should be treated as a guide, not a mathematical certainty.
+- Future projections are intentionally marked `UNVERIFIABLE` because they cannot be verified as facts yet.
 - The system is designed to assist with fact-checking, not replace human review.
 
 ## Troubleshooting

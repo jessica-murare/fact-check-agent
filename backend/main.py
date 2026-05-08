@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from extractor import extract_text_from_pdf
-from claim_identifier import identify_claims
+from claim_identifier import identify_claims, tag_future_claims
 from verifier import verify_all_claims
 from models import AnalysisReport, Verdict
 
@@ -40,6 +40,7 @@ async def analyze_pdf(file: UploadFile = File(...)):
 
     try:
         claims = identify_claims(pdf_text)
+        claims = tag_future_claims(claims)
     except ValueError as e:
         raise HTTPException(status_code=502, detail=str(e))
 

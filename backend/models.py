@@ -24,6 +24,7 @@ class VerifiedClaim(BaseModel):
     reason: str                        # explanation of verdict
     correct_value: Optional[str]       # what the real figure is, if wrong
     sources: list[str]                 # URLs used for verification
+    confidence: int                    # confidence score from 0 to 100
 
 
 class AnalysisReport(BaseModel):

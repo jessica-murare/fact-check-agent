@@ -3,6 +3,8 @@ uvicorn
 pymupdf
 groq
 requests
+httpx
+beautifulsoup4
 pydantic
 python-multipart
 python-dotenv
