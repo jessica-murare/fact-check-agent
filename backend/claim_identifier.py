@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 CURRENT_YEAR = datetime.now().year
+MAX_CLAIMS_PER_DOCUMENT = 5
 
 SYSTEM_PROMPT = """You are a precise fact-extraction assistant.
 Your job is to identify specific, verifiable claims from text.
@@ -19,6 +20,7 @@ Focus ONLY on claims that contain concrete, checkable information:
 - Scientific or research findings with numbers
 
 Do NOT extract vague opinions, subjective statements, or general descriptions.
+Extract at most 5 of the most important verifiable claims.
 
 Respond ONLY with a valid JSON array. No explanation, no markdown.
 Format:
@@ -67,7 +69,7 @@ def identify_claims(pdf_text: str) -> list[Claim]:
     except json.JSONDecodeError as e:
         raise ValueError(f"Groq returned invalid claim extraction JSON: {raw[:500]}") from e
 
-    return [Claim(**item) for item in data]
+    return [Claim(**item) for item in data[:MAX_CLAIMS_PER_DOCUMENT]]
 
 
 def tag_future_claims(claims: list[Claim]) -> list[Claim]:

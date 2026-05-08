@@ -2,9 +2,9 @@ import os
 import json
 import requests
 import re
+import time
 from groq import Groq
 from models import Claim, VerifiedClaim, Verdict
-from concurrent.futures import ThreadPoolExecutor
 import httpx
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
@@ -257,6 +257,8 @@ def verify_claim(claim: Claim) -> VerifiedClaim:
 
 
 def verify_all_claims(claims: list[Claim]) -> list[VerifiedClaim]:
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        results = list(executor.map(verify_claim, claims))
-    return results
+    verified = []
+    for claim in claims:
+        verified.append(verify_claim(claim))
+        time.sleep(1)
+    return verified
