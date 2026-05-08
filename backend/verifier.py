@@ -1,6 +1,5 @@
 import os
 import json
-import time
 import requests
 import re
 from groq import Groq
@@ -11,7 +10,6 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 load_dotenv()
 
-client = Groq(api_key=os.environ["GROQ_API_KEY"])
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 TAVILY_SEARCH_URL = "https://api.tavily.com/search"
 
@@ -46,6 +44,13 @@ Verdict definitions:
 - INACCURATE: claim is outdated or slightly wrong — include the correct value
 - FALSE: claim is clearly contradicted by evidence
 - UNVERIFIABLE: no relevant evidence found either way"""
+
+
+def get_groq_client() -> Groq:
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY is not set")
+    return Groq(api_key=api_key)
 
 
 def search_web(query: str, max_results: int = 2) -> list[dict]:
@@ -187,7 +192,7 @@ def verify_claim(claim: Claim) -> VerifiedClaim:
         snippets = "No search results found."
         sources = []
 
-    response = client.chat.completions.create(
+    response = get_groq_client().chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
             {"role": "system", "content": VERIFY_SYSTEM_PROMPT},
